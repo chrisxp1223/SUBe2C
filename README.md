@@ -36,7 +36,7 @@ SubE2C/
 
 1. Set up your Google Gemini API key as an environment variable:
     ```sh
-    export GOOGLE_API_KEY='your_api_key_here'
+    export ANTHROPIC_API_KEY='your_api_key_here'
     ```
 
 2. Run the script:
