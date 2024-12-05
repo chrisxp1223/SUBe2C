@@ -1,0 +1,2 @@
+anthropic>=0.9.0  # The Anthropic API client
+srt>=3.5.0       # For SRT file handling
