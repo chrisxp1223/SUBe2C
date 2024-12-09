@@ -219,27 +219,47 @@ def check_anthropic_api_key():
 
     return api_key
 
-def get_output_filename():
+def get_output_filename() -> str:
     """
-    Prompt user for output filename and perform basic validation.
-    Returns the filename entered by user (without path).
+    Prompt user for output filename and create output directory if needed.
+    Returns the full path for the output file.
     """
+    # Define output directory
+    output_dir = "Outputs"
+
     while True:
         try:
             # Prompt user for filename
             filename = input("\nPlease enter your output filename (.srt): ").strip()
+
             # If user enters nothing
             if not filename:
                 print("Filename cannot be empty. Please try again.")
                 continue
+
             # If user includes .srt, use their input, otherwise append it
             if not filename.endswith('.srt'):
                 filename += '.srt'
+
             # Basic check for length before more detailed validation
             if len(filename) > 255:
                 print("Filename is too long. Please enter a shorter name.")
                 continue
-            return filename
+
+            # Create output directory if it doesn't exist
+            os.makedirs(output_dir, exist_ok=True)
+
+            # Construct full path
+            full_path = os.path.join(output_dir, filename)
+
+            # Check if file already exists
+            if os.path.exists(full_path):
+                overwrite = input("File already exists. Do you want to overwrite it? (y/n): ").lower()
+                if overwrite != 'y':
+                    continue
+
+            return full_path
+
         except KeyboardInterrupt:
             print("\nOperation cancelled by user.")
             raise
