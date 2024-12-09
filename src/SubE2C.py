@@ -3,7 +3,61 @@ import sys
 import logging
 import time
 from anthropic import Anthropic
+from dotenv import load_dotenv
 import srt
+
+def validate_anthropic_key(api_key):
+    """
+    Validate Anthropic API key by making a test request.
+    Returns True if valid, False otherwise.
+    """
+    try:
+        client = Anthropic(api_key=api_key)
+        # Make a minimal test request
+        response = client.messages.create(
+            model="claude-3-haiku-20240307",
+            max_tokens=1,
+            messages=[{
+                "role": "user",
+                "content": "Hi"
+            }]
+        )
+        return True
+    except Exception as e:
+        print(f"Error validating API key: {str(e)}")
+        return False
+
+def check_anthropic_api_key():
+    """
+    Check for Anthropic API key in environment variables.
+    If not found, prompt user to input it and validate.
+    Returns valid API key or None if process is cancelled.
+    """
+    load_dotenv()  # Load existing environment variables
+    
+    # Check if API key exists in environment
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    
+    while not api_key:
+        print("\nAnthropic API key not found in environment variables.")
+        api_key = input("Please enter your Anthropic API key (or 'q' to quit): ").strip()
+        
+        if api_key.lower() == 'q':
+            return None
+            
+        # Validate the API key
+        if validate_anthropic_key(api_key):
+            # Save valid key to .env file
+            with open(".env", "a") as env_file:
+                env_file.write(f"\nANTHROPIC_API_KEY={api_key}")
+            os.environ["ANTHROPIC_API_KEY"] = api_key
+            print("API key validated and saved successfully!")
+            return api_key
+        else:
+            print("Invalid API key. Please try again.")
+            api_key = None
+    
+    return api_key
 
 def get_output_filename():
     """
@@ -74,10 +128,17 @@ def get_input_file():
 
 def main():
 
+    # check the api key exist in the environment variable
+    check_anthropic_api_key() 
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    if api_key:
+        print("Anthropic API key found.")
+    else:
+        print("Anthropic API key not found, please try another.")
+    
     # User input the file name
     # a. check the file name under Subs folder 
     # b. check if it is a valid file
-    
     file_path = get_input_file()
 
     if file_path is None:
@@ -86,7 +147,6 @@ def main():
 
     # ask user for the output file name
     get_output_filename ()
-    # check the api key exist in the environment variable
     # if not, ask user to input the api key, if the api key is valid, save it to the environment variable
     # if the api key is invalid, ask user to input again
     # validate the api key by connection test
